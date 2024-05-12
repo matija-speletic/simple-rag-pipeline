@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from document_chunk import Chunk
+from models import DocumentChunk
 
 
 class VectorStore(ABC):
@@ -13,13 +13,13 @@ class VectorStore(ABC):
         pass
 
     @abstractmethod
-    def add_batch_chunks(self, chunks: list[Chunk]):
+    def add_batch_chunks(self, chunks: list[DocumentChunk]):
         pass
 
     @abstractmethod
     def retrieve(self,
                  embedding: list[float],
-                 nearest_neighbors: int = 5) -> list[tuple[Chunk, float]]:
+                 nearest_neighbors: int = 5) -> list[tuple[DocumentChunk, float]]:
         pass
 
     def clear_data(self):

@@ -4,7 +4,7 @@ from typing import Literal
 from neo4j import GraphDatabase, ManagedTransaction
 from neo4j.graph import Node
 
-from document_chunk import Chunk
+from models import DocumentChunk
 from vector_store.base import VectorStore
 
 
@@ -34,9 +34,9 @@ class Neo4jVectorStore(VectorStore):
         with self.driver.session() as session:
             session.write_transaction(self._create_index)
 
-    def add_batch_chunks(self, chunks: list[Chunk]):
+    def add_batch_chunks(self, chunks: list[DocumentChunk]):
         with self.driver.session() as session:
-            _doc_chunks: dict[str, list[Chunk]] = {}
+            _doc_chunks: dict[str, list[DocumentChunk]] = {}
             for _chunk in chunks:
                 if _chunk.document_name not in _doc_chunks:
                     _doc_chunks[_chunk.document_name] = []
@@ -49,11 +49,11 @@ class Neo4jVectorStore(VectorStore):
 
     def retrieve(self,
                  embedding: list[float],
-                 nearest_neighbors: int = 5) -> list[tuple[Chunk, float]]:
+                 nearest_neighbors: int = 5) -> list[tuple[DocumentChunk, float]]:
         with self.driver.session() as session:
             _result: list[tuple[Node, Node, float]] = session.read_transaction(
                 self._find_similar_nodes, embedding, nearest_neighbors)
-            return [(Chunk(
+            return [(DocumentChunk(
                 text=_node['text'],
                 document_name=_doc['name'],
                 page=_node['page'],
@@ -84,7 +84,7 @@ class Neo4jVectorStore(VectorStore):
         except Exception as e:
             logging.error(f"Error creating index: {e}")
 
-    def _add_chunk_to_index(self, tx, chunk: Chunk, document_name: str):
+    def _add_chunk_to_index(self, tx, chunk: DocumentChunk, document_name: str):
         query = (
             f"MATCH (d:{self.document_label} {{name: $document_name}}) "
             f"CREATE (n:{self.chunk_label} {{"

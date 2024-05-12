@@ -1,11 +1,7 @@
-from document_splitter import DocumentSplitter
-from vector_store import Neo4jVectorStore
-from llm import OllamaEmbeddingModel
-import logging
-
+from retriever.document_loader import DocumentLoader
 
 # logging.basicConfig(level=logging.INFO)
-ds = DocumentSplitter()
+ds = DocumentLoader()
 # vs = Neo4jVectorStore(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j")
 # em = OllamaEmbeddingModel()
 # ds.load_file(r"C:\Users\matij\Projects\simple-rag-pipeline\data\1703162885-ua-part-7-profiles-1.05.02-2022-11-01.pdf")
@@ -24,4 +20,6 @@ ds = DocumentSplitter()
 # vs.close()
 
 ds.load_directory('data')
-print(ds.documents)
+md=([d.metadata for d in ds.documents])
+for m in md:
+    print(m)
