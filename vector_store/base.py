@@ -22,6 +22,11 @@ class VectorStore(ABC):
                  nearest_neighbors: int = 5) -> list[tuple[DocumentChunk, float]]:
         pass
 
+    @abstractmethod
     def clear_data(self):
+        pass
+
+    @abstractmethod
+    def list_documents(self) -> list[str]:
         pass
 

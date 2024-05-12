@@ -1,25 +1,26 @@
-from retriever.document_loader import DocumentLoader
+from pathlib import Path
 
-# logging.basicConfig(level=logging.INFO)
-ds = DocumentLoader()
-# vs = Neo4jVectorStore(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j")
-# em = OllamaEmbeddingModel()
-# ds.load_file(r"C:\Users\matij\Projects\simple-rag-pipeline\data\1703162885-ua-part-7-profiles-1.05.02-2022-11-01.pdf")
-# chunks = ds.split()
-# embeddings = em.get_text_embedding_batch([chunk.text for chunk in chunks])
-# for chunk, embedding in zip(chunks, embeddings):
-#     chunk.embedding = embedding
-# vs.add_batch_to_index(chunks)
-# qe = em.get_query_embedding("With regard to what are OPC UA profiles used for?")
-# similar_nodes = vs.retrieve(qe)
-# for chunk, score in similar_nodes:
-#     print(chunk.text)
-#     print(chunk.document_name)
-#     print("##############################################################################################")
+from rag import RAG
+from llm import OllamaLLM, OllamaEmbeddingModel
+from vector_store import Neo4jVectorStore
 
-# vs.close()
+rag = RAG(
+    Neo4jVectorStore(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j"),
+    OllamaEmbeddingModel(),
+    OllamaLLM()
+)
 
-ds.load_directory('data')
-md=([d.metadata for d in ds.documents])
-for m in md:
-    print(m)
+# rag.load_data_sources(
+#     Path(r'C:\Users\matij\Projects\simple-rag-pipeline\data\KG-RAG-datasets\sec-10-q\data\v1\docs\aapl_only'),
+#     reset_data_sources=True)
+
+prompt = "What are the major factors contributing to the change in Apple's " \
+         "gross margin in the most recent 10-Q compared to the previous quarters?"
+response, context = rag.generate(prompt, [])
+print(response)
+# for r in response:
+#     print(r)
+for chunk in context:
+    print("##############################################################################################")
+    print(chunk.document_name)
+    print(chunk.text)

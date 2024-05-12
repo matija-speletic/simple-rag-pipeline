@@ -10,7 +10,7 @@ class OllamaLLM(LLM):
     def __init__(self, model: str = 'phi3',
                  system_prompt: str | None = SYSTEM_PROMPT_TEMPLATE,
                  context_prompt: str | None = CONTEXT_PROMPT_TEMPLATE, ):
-        _model = Ollama(model=model)
+        _model = Ollama(model=model, request_timeout=200)
         super().__init__(
             model=_model,
             system_prompt=system_prompt,
@@ -19,7 +19,7 @@ class OllamaLLM(LLM):
     def generate(self, prompt: str,
                  history: list[tuple[MessageRole, str]],
                  context: str | list[str] | None = None,
-                 stream: bool = False, ) -> str | Generator[str, None, None]:
+                 stream: bool = False, ) -> str:
         if self.context_prompt and context and len(context) > 0:
             if isinstance(context, list):
                 context = "\n\n".join(context)
@@ -34,17 +34,22 @@ class OllamaLLM(LLM):
             _chat.append(ChatMessage(content=self.system_prompt, role=MessageRole.SYSTEM))
         _chat.append(ChatMessage(content=prompt, role=MessageRole.USER))
 
-        if stream:
-            for chunk in self.model.stream_chat(_chat):
-                yield chunk.message.content
-        else:
-            return self.model.chat(_chat).message.content
+        print(_chat, end='\n\n')
+
+        # if stream:
+        #     for chunk in self.model.stream_chat(_chat):
+        #         yield chunk.message.content
+        # else:
+        return self.model.chat(_chat).message.content
 
 
 class OllamaEmbeddingModel(EmbeddingModel):
-    EMBEDDING_LENGTH: int = 3072
+    EMBEDDING_LENGTH: dict[str, int] = {
+        'phi3': 3072,
+        'nomic-embed-text': 768,
+    }
 
-    def __init__(self, model: str = 'phi3'):
+    def __init__(self, model: str = 'nomic-embed-text'):
         self.model = OllamaEmbedding(model_name=model)
         self.show_progress = True
 

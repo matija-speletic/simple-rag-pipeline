@@ -13,7 +13,7 @@ class Neo4jVectorStore(VectorStore):
                  index_name='embedding_index',
                  chunk_label='Chunk',
                  embedding_property='embedding',
-                 embedding_size=3072,
+                 embedding_size=768,
                  similarity: Literal['cosine', 'euclidean'] = 'cosine',
                  document_label='Document',
                  chunk_relationship='BELONGS_TO_DOCUMENT'):
@@ -56,6 +56,7 @@ class Neo4jVectorStore(VectorStore):
             return [(DocumentChunk(
                 text=_node['text'],
                 document_name=_doc['name'],
+                document_path=_doc['link'],
                 page=_node['page'],
                 embedding=_node[self.embedding_property]
             ), _score) for _node, _doc, _score in _result]
@@ -66,6 +67,11 @@ class Neo4jVectorStore(VectorStore):
 
         with self.driver.session() as session:
             session.write_transaction(_delete_all)
+
+    def list_documents(self) -> list[str]:
+        with self.driver.session() as session:
+            result = session.run(f"MATCH (n:{self.document_label}) RETURN n")
+            return [record['n']['name'] for record in result]
 
     def _create_index(self, tx: ManagedTransaction):
         query = (
@@ -139,8 +145,8 @@ class Neo4jVectorStore(VectorStore):
 # vector_index.close()
 
 
-if __name__ == '__main__':
-    # uri = "bolt://localhost:7687"
-    # user = "neo4j"
-    # password = "neo4jneo4j"
-    vector_index = VectorIndex(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j")
+# if __name__ == '__main__':
+#     # uri = "bolt://localhost:7687"
+#     # user = "neo4j"
+#     # password = "neo4jneo4j"
+#     vector_index = VectorIndex(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j")

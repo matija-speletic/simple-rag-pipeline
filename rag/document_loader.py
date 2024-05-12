@@ -9,7 +9,7 @@ from models.document_chunk import DocumentChunk
 
 
 class DocumentLoader:
-    def __init__(self, chunk_size=700, chunk_overlap=140):
+    def __init__(self, chunk_size=300, chunk_overlap=60):
         self.pipeline = IngestionPipeline(
             transformations=[
                 SentenceSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap),
@@ -26,10 +26,11 @@ class DocumentLoader:
         self.documents += reader.load_data()
 
     def overlap_pages(self, overlap_ratio=0.15, delimiters=(".", "!", "?", "\n")):
-        page_pairs = filter(
-            lambda p1, p2: p1.metadata["file_name"] == p2.metadata["file_name"]
-            and p1.metadata["page_label"] != p2.metadata["page_label"],
-            pairwise(self.documents))
+        page_pairs = list(filter(
+            lambda p: p[0].metadata["file_name"] == p[1].metadata["file_name"]
+            and p[0].metadata["page_label"] != p[1].metadata["page_label"],
+            pairwise(self.documents)))
+
         for (page1, page2) in page_pairs:
             text1 = page1.text
             text2 = page2.text
