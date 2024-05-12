@@ -5,10 +5,11 @@ import llama_index.core.llms as li_llm
 
 CONTEXT_PROMPT_TEMPLATE = """
 Use the following pieces of context to answer the users question. 
-If you don't know the answer, just say that you don't know, don't try to make up an answer. 
-Keep the answer concise and to the point.
-----------------
-{}"""
+
+{}
+
+If you don't know the answer, just say that you "don't have information", only that and nothing more. 
+Keep the answer concise and to the point."""
 
 SYSTEM_PROMPT_TEMPLATE = """
 If you don't know the answer, just say that you don't know, don't try to make up an answer."""

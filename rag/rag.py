@@ -20,7 +20,10 @@ class RAG(Retriever):
         context = None
         chunks = []
         if use_rag:
-            chunks = self.retrieve(prompt, num_chunks=4)
-            context = [chunk.text for chunk in chunks]
+            chunks = self.retrieve(prompt, num_chunks=3)
+            context = ""
+            for chunk in chunks:
+                context += "Piece of context from document: " + chunk.document_name + "\n"
+                context += chunk.text + "\n\n"
         response = self.llm.generate(prompt, history, context, stream)
         return response, chunks

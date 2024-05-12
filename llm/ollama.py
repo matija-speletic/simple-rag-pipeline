@@ -10,7 +10,7 @@ class OllamaLLM(LLM):
     def __init__(self, model: str = 'phi3',
                  system_prompt: str | None = SYSTEM_PROMPT_TEMPLATE,
                  context_prompt: str | None = CONTEXT_PROMPT_TEMPLATE, ):
-        _model = Ollama(model=model, request_timeout=200)
+        _model = Ollama(model=model, request_timeout=100)
         super().__init__(
             model=_model,
             system_prompt=system_prompt,
@@ -33,8 +33,6 @@ class OllamaLLM(LLM):
         if len(_chat) == 0:
             _chat.append(ChatMessage(content=self.system_prompt, role=MessageRole.SYSTEM))
         _chat.append(ChatMessage(content=prompt, role=MessageRole.USER))
-
-        print(_chat, end='\n\n')
 
         # if stream:
         #     for chunk in self.model.stream_chat(_chat):
