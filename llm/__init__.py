@@ -1,10 +1,7 @@
-from llm.base import LLM, EmbeddingModel
-from llm.ollama import OllamaLLM, OllamaEmbeddingModel
+from llm.base import LLM, Embedding
 
 __all__ = [
     'LLM',
-    'EmbeddingModel',
-    'OllamaLLM',
-    'OllamaEmbeddingModel',
+    'Embedding',
 ]
 

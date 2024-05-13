@@ -1,14 +1,14 @@
 from pathlib import Path
 
 from rag.document_loader import DocumentLoader
-from llm.base import EmbeddingModel
+from llm.base import Embedding
 from models import DocumentChunk
 from vector_store.base import VectorStore
 
 
 class Retriever:
     def __init__(self, vector_store: VectorStore,
-                 embedding_model: EmbeddingModel):
+                 embedding_model: Embedding):
         self.vector_store = vector_store
         self.embedding_model = embedding_model
 

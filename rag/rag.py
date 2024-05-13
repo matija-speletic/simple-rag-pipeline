@@ -25,5 +25,5 @@ class RAG(Retriever):
             for chunk in chunks:
                 context += "Piece of context from document: " + chunk.document_name + "\n"
                 context += chunk.text + "\n\n"
-        response = self.llm.generate(prompt, history, context, stream)
+        response = self.llm.generate(prompt, history, context)
         return response, chunks
