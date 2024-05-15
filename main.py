@@ -7,13 +7,16 @@ import pandas as pd
 import json
 from tqdm import tqdm
 from dotenv import load_dotenv
+from rag.evaluation import generate_testset
+from rag.document_loader import DocumentLoader
 
 
 load_dotenv(".env")
 
 rag = RAG(
-    Neo4jVectorStore(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j", embedding_size=3072),
-    Embedding('phi3'),
+    Neo4jVectorStore(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j",
+                     embedding_size=768),
+    Embedding('nomic-embed-text'),
     LLM('gpt-3.5-turbo')
 )
 
@@ -40,9 +43,20 @@ def append_to_output_file(file_path, question, answer, context, ground_truth):
         json.dump(data, file, indent=4)
 
 
-# rag.load_data_sources(
-#     Path(r'C:\Users\matij\Projects\simple-rag-pipeline\data\KG-RAG-datasets\sec-10-q\data\v1\docs\aapl_only'),
-#     reset_data_sources=True)
+def load_data_sources(path):
+    rag.load_data_sources(
+        Path(path),
+        reset_data_sources=True,
+        chunk_size=1024,
+        chunk_overlap=128,
+    )
+
+
+def run_testset_generation(path, output_path, test_size=10):
+    dl = DocumentLoader()
+    dl.load_directory(path)
+    generate_testset(dl.documents, output_path, 10)
+
 
 def run_on_dataset(path=r'data/KG-RAG-datasets/sec-10-q/data/v1/qna_data_aapl.json'):
     with open(path) as f:
@@ -65,7 +79,7 @@ def run_on_dataset(path=r'data/KG-RAG-datasets/sec-10-q/data/v1/qna_data_aapl.js
         _context = [chunk.text + "\n\nSOURCE: " + chunk.document_name
                     for chunk in context]
         print("##############################################################################################")
-        append_to_output_file(r'results4.json', q, response, _context, a)
+        append_to_output_file(r'results5.json', q, response, _context, a)
 
 
 def run_query(query):
@@ -82,9 +96,12 @@ def run_query(query):
     print("##############################################################################################")
 
 
-run_query("What are the major factors contributing to the change in Apple's " 
-          "gross margin in the most recent 10-Q compared to the previous quarters?")
-
+# load_data_sources(r'C:\Users\matij\Projects\simple-rag-pipeline\data\KG-RAG-datasets\sec-10-q\data\v1\docs\aapl_only')
+# run_query("What are the major factors contributing to the change in Apple's "
+#           "gross margin in the most recent 10-Q compared to the previous quarters?")
+#run_on_dataset()
+run_testset_generation(r'C:\Users\matij\Projects\opc-rag\pdf',
+                       r'C:\Users\matij\Projects\opc-rag\testset.csv', 10)
 
 # prompt = "What are the major factors contributing to the change in Apple's " \
 #          "gross margin in the most recent 10-Q compared to the previous quarters?"

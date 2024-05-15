@@ -9,6 +9,7 @@ from llama_index.embeddings.ollama import OllamaEmbedding
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.ollama import Ollama
 from llama_index.llms.openai import OpenAI
+from llama_index.llms.huggingface import HuggingFaceLLM
 
 
 CONTEXT_PROMPT_TEMPLATE = """
@@ -24,8 +25,10 @@ If you don't know the answer, just say that you don't know, don't try to make up
 
 
 LLMS: dict[str, tuple[Type[li_llm.LLM], dict]] = {
-    'phi3': (Ollama, {'model': 'phi3', 'request_timeout': 100}),
+    'phi3': (Ollama, {'model': 'phi3', 'request_timeout': 300}),
     'gpt-3.5-turbo': (OpenAI, {'api_key': os.environ.get('OPENAI_API_KEY'), 'model': 'gpt-3.5-turbo'}),
+    'hf-llama3': (HuggingFaceLLM, {'model_name': 'meta-llama/Meta-Llama-3-8B-Instruct',
+                                   'model_kwargs': {'token': os.environ.get('HF_TOKEN')}})
 }
 
 EMBEDDING_MODELS: dict[str, tuple[Type[li_emb.BaseEmbedding], dict]] = {
@@ -78,7 +81,7 @@ class Embedding:
             self.model = model_class(**model_kwargs)
         else:
             self.model = model
-        self.show_progress = False
+        self.show_progress = True
 
     def get_query_embedding(self, query: str) -> list[float]:
         return self.model.get_query_embedding(query)

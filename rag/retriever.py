@@ -24,8 +24,10 @@ class Retriever:
     def load_data_sources(self, paths: Path | list[Path],
                           overlap_pages: bool = False,
                           overlap_ratio: float = 0.15,
-                          reset_data_sources: bool = False):
-        loader = DocumentLoader()
+                          reset_data_sources: bool = False,
+                          chunk_size: int = 300,
+                          chunk_overlap: int = 60):
+        loader = DocumentLoader(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
         if isinstance(paths, Path):
             paths = [paths]
         for path in paths:

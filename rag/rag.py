@@ -7,9 +7,12 @@ from rag.retriever import Retriever
 
 class RAG(Retriever):
     def __init__(self, vector_store, embedding_model,
-                 llm: LLM):
+                 llm: LLM | None = None,
+                 num_chunks: int = 5):
         super().__init__(vector_store, embedding_model)
         self.llm = llm
+
+        self.num_chunks = num_chunks
 
     def generate(
             self, prompt: str,
@@ -20,10 +23,13 @@ class RAG(Retriever):
         context = None
         chunks = []
         if use_rag:
-            chunks = self.retrieve(prompt, num_chunks=3)
+            chunks = self.retrieve(prompt, num_chunks=self.num_chunks)
             context = ""
             for chunk in chunks:
                 context += "Piece of context from document: " + chunk.document_name + "\n"
                 context += chunk.text + "\n\n"
-        response = self.llm.generate(prompt, history, context)
+        if self.llm is None:
+            response = None
+        else:
+            response = self.llm.generate(prompt, history, context)
         return response, chunks
