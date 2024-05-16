@@ -1,6 +1,6 @@
 from llama_index.core.llms import MessageRole
 
-from llm.base import LLM
+from llm.base import LLM, DEFAULT_LANGUAGE
 from models import DocumentChunk
 from rag.retriever import Retriever
 
@@ -8,14 +8,22 @@ from rag.retriever import Retriever
 class RAG(Retriever):
     def __init__(self, vector_store, embedding_model,
                  llm: LLM | None = None,
-                 num_chunks: int = 5):
+                 num_chunks: int = 5,
+                 language: str = DEFAULT_LANGUAGE):
         super().__init__(vector_store, embedding_model)
         self.llm = llm
+        if self.llm is not None and self.llm.language != language:
+            self.llm.language = language
 
         self.num_chunks = num_chunks
+        self.language = language
 
     def _prepare_inputs(self, prompt: str,
                         use_rag: bool) -> tuple[str, list[DocumentChunk]]:
+        if self.language != DEFAULT_LANGUAGE:
+            prompt = self.llm.generate(
+                f"Translate this from {self.language} to English: " + prompt, [])
+            print(prompt)
         context = None
         chunks = []
         if use_rag:
@@ -29,7 +37,6 @@ class RAG(Retriever):
     def generate(
             self, prompt: str,
             history: list[tuple[MessageRole, str]],
-            stream: bool = False,
             use_rag: bool = True
     ) -> tuple[str, list[DocumentChunk]]:
         context, chunks = self._prepare_inputs(prompt, use_rag)

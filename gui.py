@@ -14,8 +14,14 @@ rag = RAG(
     Neo4jVectorStore(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j",
                      embedding_size=768),
     Embedding('nomic-embed-text'),
-    LLM('gpt-3.5-turbo', language='serbian')
+    LLM('gpt-3.5-turbo'),
+    language='serbian'
 )
+
+TITLES = {
+    'serbian': 'QA Chatbot za klinička ispitivanja',
+    'english': 'Medical Trial QA Chatbot',
+}
 
 st.title("Medical Trial QA Chatbot")
 
@@ -31,7 +37,7 @@ for message in st.session_state["messages"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("What is up?"):
+if prompt := st.chat_input("What would you like to know about medical trials?"):
     st.session_state["messages"].append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)

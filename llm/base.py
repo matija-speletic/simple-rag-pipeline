@@ -31,7 +31,8 @@ LLMS: dict[str, tuple[Type[li_llm.LLM], dict]] = {
     #                                'model_kwargs': {'token': os.environ.get('HF_TOKEN')}})
 }
 
-LANGUAGE_PROMPT = "The context is given in english, but you should answer in {lang}."
+LANGUAGE_PROMPT = "The context is given in english, but the question is in {lang}. You should answer in {lang}."
+DEFAULT_LANGUAGE = 'english'
 
 EMBEDDING_MODELS: dict[str, tuple[Type[li_emb.BaseEmbedding], dict]] = {
     'nomic-embed-text': (OllamaEmbedding, {'model_name': 'nomic-embed-text'}),
@@ -42,8 +43,7 @@ EMBEDDING_MODELS: dict[str, tuple[Type[li_emb.BaseEmbedding], dict]] = {
 class LLM:
     def __init__(self, model: li_llm.LLM | str,
                  system_prompt: str | None = SYSTEM_PROMPT_TEMPLATE,
-                 context_prompt: str | None = CONTEXT_PROMPT_TEMPLATE,
-                 language: str = 'english'):
+                 context_prompt: str | None = CONTEXT_PROMPT_TEMPLATE):
         if isinstance(model, str):
             model_class, model_kwargs = LLMS[model]
             self.model = model_class(**model_kwargs)
@@ -51,7 +51,7 @@ class LLM:
             self.model = model
         self.system_prompt = system_prompt
         self.context_prompt = context_prompt
-        self.language = language
+        self.language = DEFAULT_LANGUAGE
 
     def generate(self, prompt: str,
                  history: list[tuple[li_llm.MessageRole, str]],
