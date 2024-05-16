@@ -14,12 +14,8 @@ class RAG(Retriever):
 
         self.num_chunks = num_chunks
 
-    def generate(
-            self, prompt: str,
-            history: list[tuple[MessageRole, str]],
-            stream: bool = False,
-            use_rag: bool = True
-    ) -> tuple[str, list[DocumentChunk]]:
+    def _prepare_inputs(self, prompt: str,
+                        use_rag: bool) -> tuple[str, list[DocumentChunk]]:
         context = None
         chunks = []
         if use_rag:
@@ -28,8 +24,27 @@ class RAG(Retriever):
             for chunk in chunks:
                 context += "Piece of context from document: " + chunk.document_name + "\n"
                 context += chunk.text + "\n\n"
+        return context, chunks
+
+    def generate(
+            self, prompt: str,
+            history: list[tuple[MessageRole, str]],
+            stream: bool = False,
+            use_rag: bool = True
+    ) -> tuple[str, list[DocumentChunk]]:
+        context, chunks = self._prepare_inputs(prompt, use_rag)
         if self.llm is None:
-            response = None
+            response = ""
         else:
             response = self.llm.generate(prompt, history, context)
         return response, chunks
+
+    def generate_stream(
+            self, prompt: str,
+            history: list[tuple[MessageRole, str]],
+            use_rag: bool = True
+    ):
+        context, chunks = self._prepare_inputs(prompt, use_rag)
+
+        stream = self.llm.generate_stream(prompt, history, context)
+        return stream, chunks

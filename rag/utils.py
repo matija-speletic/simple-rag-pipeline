@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 from datasets import Dataset
@@ -16,12 +17,15 @@ import pandas as pd
 from rag import RAG
 
 
-def load_data_sources(rag: RAG, data_sources_dir: str):
+def load_data_sources(rag: RAG, data_sources_dir: str,
+                      reset_data_sources: bool = True,
+                      chunk_size: int = 1024,
+                      chunk_overlap: int = 128):
     rag.load_data_sources(
         Path(data_sources_dir),
-        reset_data_sources=True,
-        chunk_size=1024,
-        chunk_overlap=128,
+        reset_data_sources=reset_data_sources,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
     )
 
 
@@ -35,10 +39,10 @@ def add_metadata_to_output_json(json_path: str, metadata: dict):
 
 def append_to_output_file(file_path: str,
                           question: str, answer: str,
-                          context: str, ground_truth: str):
+                          context: list[str], ground_truth: str):
     try:
         with open(file_path, 'r') as file:
-            data: dict[str, list[str]] = json.load(file)
+            data: dict = json.load(file)
     except FileNotFoundError:
         data = {}
     if 'question' not in data:
@@ -98,7 +102,7 @@ def run_query(rag: RAG, query: str):
 
 
 def evaluate_rag(rag_output_path: str, results_path: str,
-                 truncate=False, truncate_size=4):
+                 truncate=False, trunc_to=4, trunc_from=0):
     with open(rag_output_path) as f:
         data = json.load(f)
     if 'contexts' not in data and 'context' in data:
@@ -107,10 +111,10 @@ def evaluate_rag(rag_output_path: str, results_path: str,
     if 'metadata' in data:
         del data['metadata']
     if truncate:
-        data['question'] = data['question'][:truncate_size]
-        data['answer'] = data['answer'][:truncate_size]
-        data['contexts'] = data['contexts'][:truncate_size]
-        data['ground_truth'] = data['ground_truth'][:truncate_size]
+        data['question'] = data['question'][trunc_from:trunc_to]
+        data['answer'] = data['answer'][trunc_from:trunc_to]
+        data['contexts'] = data['contexts'][trunc_from:trunc_to]
+        data['ground_truth'] = data['ground_truth'][trunc_from:trunc_to]
     dataset = Dataset.from_dict(data)
     results = ragas_evaluate(dataset,
                              metrics=[
@@ -125,4 +129,6 @@ def evaluate_rag(rag_output_path: str, results_path: str,
     results_df.to_json(results_path + '.json', indent=4)
 
 
-
+def run_gui():
+    command = 'streamlit run gui.py'
+    os.system(command)

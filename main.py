@@ -1,3 +1,5 @@
+import os
+from time import sleep
 
 from rag import RAG
 from llm import LLM, Embedding
@@ -8,32 +10,43 @@ from rag.utils import (
     run_on_dataset,
     run_query,
     load_data_sources,
-    evaluate_rag
+    evaluate_rag,
+    run_gui
 )
 
+
+run_gui()
 
 load_dotenv(".env")
+#
+# rag = RAG(
+#     Neo4jVectorStore(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j",
+#                      embedding_size=768),
+#     Embedding('nomic-embed-text'),
+#     LLM('phi3'),
+#     num_chunks=3
+# )
 
-rag = RAG(
-    Neo4jVectorStore(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j",
-                     embedding_size=768),
-    Embedding('nomic-embed-text'),
-    LLM('gpt-3.5-turbo')
-)
 
-
+# load_data_sources(rag, r'med_qa/docs',True,300,40)
 # load_data_sources(r'med_qa/docs')
 # run_query("What are the major factors contributing to the change in Apple's "
 #           "gross margin in the most recent 10-Q compared to the previous quarters?")
-# run_on_dataset(r'med_qa/qa.json', r'med_qa/output.json',
+# run_on_dataset(rag, r'med_qa/qa.json', r'med_qa/output2.json',
 #                metadata={
 #                     'dataset': 'med_qa',
 #                     'vector_store': 'neo4j',
 #                     'RAG': True,
-#                     'chunk_size': 1024,
-#                     'chunk_overlap': 128,
+#                     'chunk_size': 300,
+#                     'chunk_overlap': 40,
 #                     'embedding': 'nomic-embed-text',
-#                     'llm': 'gpt-3.5-turbo'})
+#                     'llm': 'phi3'})
+# evaluate_rag(r'med_qa/output2.json', r'med_qa/results2_1.json',True,7,0)
+# sleep(10)
+# evaluate_rag(r'med_qa/output2.json', r'med_qa/results2_2.json',True,14,7)
+# sleep(10)
+# evaluate_rag(r'med_qa/output2.json', r'med_qa/results2_3.json',True,22,14)
+
 # run_testset_generation(r'C:\Users\matij\Projects\opc-rag\pdf',
 #                        r'C:\Users\matij\Projects\opc-rag\testset.csv', 10)
 
