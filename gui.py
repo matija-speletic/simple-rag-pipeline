@@ -1,3 +1,5 @@
+import os
+
 import streamlit as st
 from llama_index.core.llms import MessageRole
 
@@ -11,7 +13,9 @@ from dotenv import load_dotenv
 load_dotenv(".env")
 
 rag = RAG(
-    Neo4jVectorStore(uri="bolt://localhost:7687", user="neo4j", password="neo4jneo4j",
+    Neo4jVectorStore(uri=os.environ.get("NEO4J_URI"),
+                     user=os.environ.get("NEO4J_USER"),
+                     password=os.environ.get("NEO4J_PASSWORD"),
                      embedding_size=768),
     Embedding('nomic-embed-text'),
     LLM('gpt-3.5-turbo'),
@@ -24,11 +28,6 @@ TITLES = {
 }
 
 st.title("Medical Trial QA Chatbot")
-
-# client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo"
 
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
@@ -43,14 +42,6 @@ if prompt := st.chat_input("What would you like to know about medical trials?"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        # stream = client.chat.completions.create(
-        #     model=st.session_state["openai_model"],
-        #     messages=[
-        #         {"role": m["role"], "content": m["content"]}
-        #         for m in st.session_state.messages
-        #     ],
-        #     stream=True,
-        # )
         messages = [
                     {"role": m["role"], "content": m["content"]}
                     for m in st.session_state["messages"]
@@ -61,7 +52,7 @@ if prompt := st.chat_input("What would you like to know about medical trials?"):
                 return MessageRole.ASSISTANT
             return MessageRole.USER
 
-        _history=[
+        _history = [
             (_get_message_role(message["role"]), message["content"])
             for message in messages
         ]
@@ -73,10 +64,5 @@ if prompt := st.chat_input("What would you like to know about medical trials?"):
             _sources_html += f'<li><a href="{chunk.document_path}">{chunk.document_name}, page {chunk.page}</a></li><br>\n'
         _sources_html += "</ol>\n</details>"
         st.markdown(_sources_html, unsafe_allow_html=True)
-        # st.markdown("<details><summary><b>Sources</b></summary>", unsafe_allow_html=True)
-        # st.markdown("*SOURCES:*")
-        # for chunk in chunks:
-        #     st.markdown(f'- [{chunk.document_name}, page {chunk.page}]({chunk.document_path})',
-        #                 unsafe_allow_html=True)
-        # st.markdown("</details>", unsafe_allow_html=True)
+
     st.session_state["messages"].append({"role": "assistant", "content": response})
